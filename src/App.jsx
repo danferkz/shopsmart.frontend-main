@@ -15,7 +15,7 @@ import AdminOrdenes from './pages/Admin/AdminOrdenes';
 import AdminClientes from './pages/Admin/AdminClientes';
 import AdminAdmins from './pages/Admin/AdminAdmins';
 
-import ProveedorOrdenes from './pages/Proveedores/ProveedorOrdenes';
+import ProveedorOrdenes from './pages/Proveedores/Proveedores';
 import Unauthorized from './pages/Unauthorized';
 
 const App = () => {
