@@ -28,8 +28,8 @@ const App = () => {
       <Routes>
         {/* Rutas de Clientes */}
         <Route path="/clientes/register" element={<Register />} />
-        <Route path="/clientes/login" element={<Login />} />
-        <Route path="/clientes/productos" element={<Productos />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/productos" element={<Productos />} />
         <Route path="/clientes/cuenta" element={<CuentaUsuario />} />
 
         {/* Rutas de Admin */}
