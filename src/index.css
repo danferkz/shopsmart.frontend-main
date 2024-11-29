@@ -1,0 +1,12 @@
+/* Resetea los márgenes y paddings globales */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Evita barras de desplazamiento innecesarias */
+}
+
+#root {
+  height: 100%; /* Asegura que el contenedor principal ocupe toda la pantalla */
+}
