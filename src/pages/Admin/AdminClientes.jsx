@@ -1,16 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AdminClientes = () => {
+    const [customers, setCustomers] = useState([]);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
 
-    // Datos de ejemplo
-    const customers = [
-        { id: '1', name: 'Juan Pérez', email: 'juan@example.com', phone: '123-456-7890', totalOrders: 5 },
-        { id: '2', name: 'María García', email: 'maria@example.com', phone: '098-765-4321', totalOrders: 3 },
-        { id: '3', name: 'Carlos Rodríguez', email: 'carlos@example.com', phone: '555-555-5555', totalOrders: 7 },
-        { id: '4', name: 'Ana Martínez', email: 'ana@example.com', phone: '111-222-3333', totalOrders: 2 },
-        { id: '5', name: 'Luis Sánchez', email: 'luis@example.com', phone: '444-444-4444', totalOrders: 4 },
-    ];
+    useEffect(() => {
+        // Hacer la solicitud para obtener los usuarios
+        axios
+            .get('http://localhost:8080/api/v1/users/get-all')
+            .then((response) => {
+                const users = response.data.data;
+                // Filtrar solo los usuarios con rol 'USER'
+                const filteredUsers = users.filter(user =>
+                    user.role.some(role => role.name === 'USER')
+                );
+                setCustomers(filteredUsers);
+            })
+            .catch((error) => {
+                console.error('Hubo un error al obtener los usuarios:', error);
+            });
+    }, []); // Este useEffect se ejecutará solo una vez, cuando se monte el componente
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -27,17 +37,15 @@ const AdminClientes = () => {
                             <th className="border px-4 py-2">Nombre</th>
                             <th className="border px-4 py-2">Email</th>
                             <th className="border px-4 py-2">Teléfono</th>
-                            <th className="border px-4 py-2">Total Pedidos</th>
                             <th className="border px-4 py-2">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {customers.map((customer) => (
                             <tr key={customer.id}>
-                                <td className="border px-4 py-2">{customer.name}</td>
+                                <td className="border px-4 py-2">{`${customer.firstName} ${customer.lastName}`}</td>
                                 <td className="border px-4 py-2">{customer.email}</td>
-                                <td className="border px-4 py-2">{customer.phone}</td>
-                                <td className="border px-4 py-2">{customer.totalOrders}</td>
+                                <td className="border px-4 py-2">No disponible</td> {/* Asumiendo que no hay un campo teléfono */}
                                 <td className="border px-4 py-2">
                                     <button
                                         className="text-blue-600"
@@ -56,10 +64,8 @@ const AdminClientes = () => {
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                         <div className="bg-white rounded-lg w-96 p-6">
                             <h3 className="text-xl font-semibold mb-4">Detalles del Cliente</h3>
-                            <p><strong>Nombre:</strong> {selectedCustomer.name}</p>
+                            <p><strong>Nombre:</strong> {`${selectedCustomer.firstName} ${selectedCustomer.lastName}`}</p>
                             <p><strong>Email:</strong> {selectedCustomer.email}</p>
-                            <p><strong>Teléfono:</strong> {selectedCustomer.phone}</p>
-                            <p><strong>Total de Pedidos:</strong> {selectedCustomer.totalOrders}</p>
                             <div className="mt-4 text-right">
                                 <button
                                     className="bg-blue-600 text-white px-4 py-2 rounded"
