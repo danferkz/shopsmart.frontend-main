@@ -1,39 +1,23 @@
-import { useState, useEffect } from "react";
-import { TextField, Button, Typography, Box } from "@mui/material";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// IMAGEN IMPORTADA
-import BackgroundImage from "../assets/ShopSmart_Background.png";
-
-import Header from "../components/Header";
-
-const Login = () => {
+const LoginForm = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (formData.email === "" || formData.password === "") {
+    if (!email || !password) {
       setError("Por favor, completa todos los campos.");
       return;
     }
 
-    if (
-      formData.email === "admin@erp.com" &&
-      formData.password === "admin123"
-    ) {
+    if (email === "admin@erp.com" && password === "admin123") {
       login();
       navigate("/products");
     } else {
@@ -41,140 +25,79 @@ const Login = () => {
     }
   };
 
-  useEffect(() => {
-    setFormData({ email: "", password: "" });
-    setError("");
-  }, []);
-
   return (
-    <div
-      className="flex justify-center items-center min-h-screen"
-      style={{
-        height: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundImage: `url(${BackgroundImage})`, // Usa la imagen importada
-        backgroundSize: "cover", // Hace que la imagen cubra toda la pantalla
-        backgroundPosition: "center", // Centra la imagen
-        backgroundRepeat: "no-repeat", // Evita que la imagen se repita
-        flexDirection: "column", // Asegura que el contenido se apile verticalmente
-      }}
-        >
-      
-
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded shadow-lg w-full max-w-sm"
-        style={{
-          backgroundColor: "white",
-          padding: "2rem",
-          borderRadius: "8px",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-          width: "400px",
-          zIndex: 1, // Asegura que el formulario esté encima de la imagen
-        }}
-      >
-        <Typography
-          variant="h4"
-          component="h1"
-          className="text-center text-blue-500 font-bold mb-6"
-          style={{
-            textAlign: "center",
-            marginBottom: "1.5rem",
-            color: "#2563EB",
-          }}
-        >
-          Iniciar Sesión
-        </Typography>
-
-        <TextField
-          fullWidth
-          label="Correo Electrónico"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          variant="outlined"
-          className="mb-4"
-          autoComplete="off"
-          style={{
-            marginBottom: "1rem",
-          }}
-        />
-
-        <TextField
-          fullWidth
-          label="Contraseña"
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          variant="outlined"
-          className="mb-4"
-          autoComplete="off"
-          style={{
-            marginBottom: "1.5rem",
-          }}
-        />
-
-        {error && (
-          <Typography
-            variant="body2"
-            style={{
-              color: "red",
-              textAlign: "center",
-              marginBottom: "1rem",
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-lg rounded-lg w-full max-w-md p-6">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold">Iniciar Sesión</h1>
+          <p className="text-gray-600">Ingresa tus credenciales para acceder</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Correo Electrónico
+            </label>
+            <input
+              id="email"
+              type="email"
+              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              placeholder="tu@ejemplo.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Contraseña
+            </label>
+            <input
+              id="password"
+              type="password"
+              className="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          {error && (
+            <p className="text-sm text-red-500 text-center">
+              {error}
+            </p>
+          )}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-300"
+          >
+            Iniciar Sesión
+          </button>
+        </form>
+        <div className="flex flex-col items-center mt-4 space-y-2">
+          <a
+            href="#"
+            className="text-sm text-blue-600 hover:underline"
+            onClick={(e) => {
+              e.preventDefault();
+              alert("Funcionalidad de recuperar contraseña aún no implementada.");
             }}
           >
-            {error}
-          </Typography>
-        )}
-
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          style={{
-            backgroundColor: "#2563EB",
-            color: "white",
-            fontWeight: "bold",
-            padding: "0.75rem",
-          }}
-        >
-          Iniciar Sesión
-        </Button>
-
-        <Typography
-          variant="body2"
-          style={{
-            textAlign: "center",
-            marginTop: "1rem",
-            color: "#6B7280",
-            cursor: "pointer",
-          }}
-          onClick={() =>
-            alert("Funcionalidad de recuperar contraseña aún no implementada.")
-          }
-        >
-          ¿Olvidaste tu contraseña?
-        </Typography>
-
-        <Typography
-          variant="body2"
-          style={{
-            textAlign: "center",
-            marginTop: "1rem",
-            color: "#064eff",
-            cursor: "pointer",
-          }}
-          onClick={() => navigate("/register")}
-        >
-          Registrate aquí
-        </Typography>
-      </Box>
+            ¿Olvidaste tu contraseña?
+          </a>
+          <a
+            href="#"
+            className="text-sm text-blue-600 hover:underline"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/register");
+            }}
+          >
+            Registrate aquí
+          </a>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Login;
+export default LoginForm;
