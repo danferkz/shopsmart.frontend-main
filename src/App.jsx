@@ -7,6 +7,7 @@ import Register from "./pages/Clientes/Register";
 import Login from "./pages/Clientes/Login";
 import Productos from "./pages/Clientes/Productos";
 import CuentaUsuario from "./pages/Clientes/Cuentausuario";
+import Carrito from './pages/Clientes/Carrito';
 
 // Páginas Admin
 import Administracion from "./pages/Admin/Administracion";
@@ -31,6 +32,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/productos" element={<Productos />} />
         <Route path="/clientes/cuenta" element={<CuentaUsuario />} />
+        <Route path="/clientes/carrito" element={<Carrito />} />
 
         {/* Rutas de Admin */}
         <Route path="/admin" element={<Administracion />} />
