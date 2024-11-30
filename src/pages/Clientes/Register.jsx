@@ -1,14 +1,18 @@
-// src/pages/Clientes/Register.jsx
 import React, { useState } from 'react';
+import axios from 'axios';
+import { Snackbar, CircularProgress } from '@mui/material';
 
 const Register = () => {
     const [formData, setFormData] = useState({
-        username: '',
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
+        role: 'user',
     });
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', type: '' });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -20,8 +24,11 @@ const Register = () => {
 
     const validateForm = () => {
         const newErrors = {};
-        if (!formData.username || formData.username.length < 2) {
-            newErrors.username = 'El nombre de usuario debe tener al menos 2 caracteres.';
+        if (!formData.firstName || formData.firstName.length < 2) {
+            newErrors.firstName = 'El nombre debe tener al menos 2 letras.';
+        }
+        if (!formData.lastName || formData.lastName.length < 2) {
+            newErrors.lastName = 'El apellido debe tener al menos 2 letras.';
         }
         if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Por favor, introduce un email válido.';
@@ -32,7 +39,7 @@ const Register = () => {
         return newErrors;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         const validationErrors = validateForm();
@@ -42,74 +49,148 @@ const Register = () => {
         }
 
         setIsLoading(true);
+        try {
+            const requestData = {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                password: formData.password,
+            };
 
-        // Aquí iría la lógica para enviar los datos al servidor
-        console.log(formData);
+            let endpoint = 'http://localhost:8080/api/v1/users/add';
+            if (formData.role === 'admin') {
+                endpoint = 'http://localhost:8080/api/v1/users/add/admin';
+            } else if (formData.role === 'provider') {
+                endpoint = 'http://localhost:8080/api/v1/users/add/provider';
+            }
 
-        setTimeout(() => {
+            const response = await axios.post(endpoint, requestData);
+            console.log('Respuesta del servidor:', response.data);
+            setSnackbar({ open: true, message: 'Registro exitoso', type: 'success' });
+        } catch (error) {
+            console.error('Error al registrar usuario:', error.response?.data || error.message);
+            setSnackbar({
+                open: true,
+                message: error.response?.data?.message || 'Error desconocido',
+                type: 'error',
+            });
+        } finally {
             setIsLoading(false);
-            alert('Registro exitoso');
-            // Aquí se podría redirigir al usuario, por ejemplo:
-            // router.push('/login');
-        }, 2000); // Simula un delay de 2 segundos
+        }
     };
 
+    const closeSnackbar = () => setSnackbar({ open: false, message: '', type: '' });
+
     return (
-        <div className="container mx-auto p-4 flex items-center justify-center min-h-screen bg-gray-100">
-            <div className="bg-white shadow-lg rounded-lg px-8 py-6 w-full max-w-md">
-                <h1 className="text-2xl font-bold mb-6 text-center">Registrar Usuario</h1>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="mb-4">
-                        <label htmlFor="username" className="block">Nombre de usuario</label>
+        <div className="container mx-auto p-4 flex items-center justify-center h-full bg-gray-100">
+            <div className="bg-white shadow-lg rounded-lg px-6 py-4 w-full max-w-sm">
+                <h1 className="text-xl font-bold mb-4 text-center">Registrar Usuario</h1>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="mb-3">
+                        <label htmlFor="firstName" className="block text-sm font-medium">
+                            Nombre
+                        </label>
                         <input
                             type="text"
-                            id="username"
-                            name="username"
-                            value={formData.username}
+                            id="firstName"
+                            name="firstName"
+                            value={formData.firstName}
                             onChange={handleChange}
-                            className="border p-2 w-full"
-                            placeholder="Tu nombre"
+                            className="border p-2 w-full text-sm"
+                            placeholder="Ingrese nombre"
                         />
-                        {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+                        {errors.firstName && <p className="text-red-500 text-xs">{errors.firstName}</p>}
                     </div>
 
-                    <div className="mb-4">
-                        <label htmlFor="email" className="block">Email</label>
+                    <div className="mb-3">
+                        <label htmlFor="lastName" className="block text-sm font-medium">
+                            Apellido
+                        </label>
+                        <input
+                            type="text"
+                            id="lastName"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                            className="border p-2 w-full text-sm"
+                            placeholder="Ingrese apellido"
+                        />
+                        {errors.lastName && <p className="text-red-500 text-xs">{errors.lastName}</p>}
+                    </div>
+
+                    <div className="mb-3">
+                        <label htmlFor="email" className="block text-sm font-medium">
+                            Email
+                        </label>
                         <input
                             type="email"
                             id="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="border p-2 w-full"
-                            placeholder="tu@ejemplo.com"
+                            className="border p-2 w-full text-sm"
+                            placeholder="Ingresa tu correo"
                         />
-                        {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+                        {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
                     </div>
 
-                    <div className="mb-4">
-                        <label htmlFor="password" className="block">Contraseña</label>
+                    <div className="mb-3">
+                        <label htmlFor="password" className="block text-sm font-medium">
+                            Contraseña
+                        </label>
                         <input
                             type="password"
                             id="password"
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            className="border p-2 w-full"
+                            className="border p-2 w-full text-sm"
                             placeholder="********"
                         />
-                        {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+                        {errors.password && <p className="text-red-500 text-xs">{errors.password}</p>}
+                    </div>
+
+                    <div className="mb-3">
+                        <label htmlFor="role" className="block text-sm font-medium">
+                            Rol
+                        </label>
+                        <select
+                            id="role"
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                            className="border p-2 w-full text-sm"
+                        >
+                            <option value="user">Cliente</option>
+                            <option value="admin">Administrador</option>
+                            <option value="provider">Proveedor</option>
+                        </select>
                     </div>
 
                     <button
                         type="submit"
-                        className="bg-blue-500 text-white py-2 px-4 rounded w-full"
+                        className={`bg-blue-500 text-white py-2 px-4 rounded w-full flex items-center justify-center ${
+                            isLoading ? 'opacity-50' : ''
+                        }`}
                         disabled={isLoading}
                     >
-                        {isLoading ? 'Registrando...' : 'Registrarse'}
+                        {isLoading ? <CircularProgress size={20} color="inherit" /> : 'Registrarse'}
                     </button>
                 </form>
             </div>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={closeSnackbar}
+                message={snackbar.message}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                ContentProps={{
+                    style: {
+                        backgroundColor: snackbar.type === 'success' ? '#4caf50' : '#f44336',
+                    },
+                }}
+            />
         </div>
     );
 };

@@ -194,7 +194,7 @@ const Productos = () => {
                                         <h2 className="font-semibold text-lg">{product.name}</h2>
                                         <p className="text-sm text-gray-600">{product.brand}</p>
                                         <p className="text-sm text-gray-600">{product.category.name}</p>
-                                        <p className="text-lg font-bold mt-2">${product.price}</p>
+                                        <p className="text-lg font-bold mt-2">S/.{product.price}</p>
                                         <button
                                             onClick={() => addToCart(product)}
                                             className="w-full bg-blue-500 text-white py-2 mt-4 rounded hover:bg-blue-600 transition-colors"
