@@ -5,7 +5,9 @@ const PaymentButton = ({ amount, purchaseNumber }) => {
   const [showModal, setShowModal] = useState(false);
   const [sessionToken, setSessionToken] = useState("");
   const [transactionResult, setTransactionResult] = useState(null);
+  const [errorCount, setErrorCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+
   const iframeRef = useRef(null);
 
   // Obtener el sessionToken
@@ -22,6 +24,7 @@ const PaymentButton = ({ amount, purchaseNumber }) => {
         const data = await response.json();
         setSessionToken(data.sessionToken);
         setShowModal(true);
+        setErrorCount(0);
       } else {
         setErrorMessage("Error al obtener el token de sesión.");
       }
@@ -47,12 +50,27 @@ const PaymentButton = ({ amount, purchaseNumber }) => {
         });
         setShowModal(false);
       } else {
-        setErrorMessage("Error al autorizar la transacción.");
+        handleError();
       }
     } catch (error) {
       console.error("Error:", error);
-      setErrorMessage("Error de red al autorizar la transacción.");
+      handleError(); 
     }
+  };
+
+  // Manejar errores consecutivos
+  const handleError = () => {
+    setErrorCount((prevCount) => {
+      const newCount = prevCount + 1;
+      if (newCount >= 2) {
+        setShowModal(false);
+        setTransactionResult({
+          status: "Error",
+          actionDescription: "El pago no fue realizado correctamente!",
+        });
+      }
+      return newCount;
+    });
   };
 
   // Generar el HTML del formulario de pago
@@ -84,9 +102,44 @@ const PaymentButton = ({ amount, purchaseNumber }) => {
     </html>
   `;
 
+  // Estilo base para los modales
+  const modalStyle = {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  };
+
+  const modalContentStyle = {
+    backgroundColor: "#fff",
+    padding: "30px",
+    borderRadius: "8px",
+    textAlign: "center",
+    width: "90%",
+    maxWidth: "600px",
+    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+  };
+
+  const buttonStyle = {
+    marginTop: "20px",
+    padding: "10px 20px",
+    fontSize: "16px",
+    cursor: "pointer",
+    backgroundColor: "#007BFF",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+  };
+
   return (
-    <div>
-      {/* Botón para iniciar el proceso */}
+    <div style={{ textAlign: "center" }}>
+      {/* Botón para iniciar el proceso XD */}
       <button
         onClick={getSessionToken}
         disabled={isLoading}
@@ -105,92 +158,61 @@ const PaymentButton = ({ amount, purchaseNumber }) => {
 
       {/* Modal con el formulario de pago */}
       {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "#fff",
-              padding: "20px",
-              borderRadius: "8px",
-              width: "90%",
-              maxWidth: "600px",
-            }}
-          >
+        <div style={modalStyle}>
+          <div style={modalContentStyle}>
             <h2>Formulario de Pago</h2>
             {sessionToken ? (
               <iframe
                 ref={iframeRef}
                 onLoad={handleIframeLoad}
                 srcDoc={generateHtml()}
-                style={{ width: "100%", height: "400px", border: "none" }}
+                style={{
+                  width: "100%",
+                  height: "400px",
+                  border: "none",
+                  marginTop: "20px",
+                }}
                 title="Formulario de Pago"
               />
             ) : (
               <p>{errorMessage || "Cargando..."}</p>
             )}
+            <button
+              onClick={() => setShowModal(false)}
+              style={{ ...buttonStyle, backgroundColor: "#DC3545" }}
+            >
+              Cerrar
+            </button>
           </div>
         </div>
       )}
 
       {/* Modal con el resultado de la transacción */}
       {transactionResult && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: "#fff",
-              padding: "20px",
-              borderRadius: "8px",
-              width: "90%",
-              maxWidth: "400px",
-            }}
-          >
+        <div style={modalStyle}>
+          <div style={modalContentStyle}>
             <h2>Resultado de la Transacción</h2>
-            <p>
-              <strong>Estado:</strong> {transactionResult.status}
-            </p>
-            <p>
-              <strong>ID de Transacción:</strong> {transactionResult.transactionId}
-            </p>
-            <p>
-              <strong>Descripción:</strong> {transactionResult.actionDescription}
-            </p>
+            {transactionResult.status === "Authorized" ? (
+              <>
+               <p>
+                  <strong>Estado de la transaccion:</strong>{" "}
+                  {transactionResult.status}
+                </p>
+                <p>
+                  <strong>ID de Transacción:</strong>{" "}
+                  {transactionResult.transactionId}
+                </p>
+                <p>
+                  <strong>Descripción:</strong>{" "}
+                  {transactionResult.actionDescription}
+                </p>
+              </>
+            ) : (
+              <p>{transactionResult.actionDescription}</p>
+            )}
             <button
               onClick={() => setTransactionResult(null)}
-              style={{
-                marginTop: "10px",
-                padding: "10px 20px",
-                fontSize: "16px",
-                cursor: "pointer",
-                backgroundColor: "#007BFF",
-                color: "#fff",
-                border: "none",
-                borderRadius: "5px",
-              }}
+              style={buttonStyle}
             >
               Cerrar
             </button>

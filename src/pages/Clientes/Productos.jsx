@@ -1,18 +1,11 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios'; // Importar axios para hacer la solicitud HTTP
 import { useCart } from '../../context/CartContext'; // Ajusta la ruta según la estructura de tu proyecto
-
-// Simulated product data
-const products = [
-    { id: '1', name: 'Smartphone X', brand: 'TechCo', category: 'Electronics', price: 699, image: '/placeholder.svg?height=200&width=200' },
-    { id: '2', name: 'Laptop Pro', brand: 'CompuTech', category: 'Electronics', price: 1299, image: '/placeholder.svg?height=200&width=200' },
-    { id: '3', name: 'Wireless Earbuds', brand: 'AudioPhile', category: 'Audio', price: 149, image: '/placeholder.svg?height=200&width=200' },
-    { id: '4', name: 'Smart Watch', brand: 'TechCo', category: 'Wearables', price: 299, image: '/placeholder.svg?height=200&width=200' },
-    { id: '5', name: 'Digital Camera', brand: 'PhotoPro', category: 'Photography', price: 799, image: '/placeholder.svg?height=200&width=200' },
-];
 
 const Productos = () => {
     const { addToCart } = useCart(); // Usamos el hook para obtener la función addToCart
-    const [filteredProducts, setFilteredProducts] = useState(products);
+    const [products, setProducts] = useState([]); // Estado para almacenar los productos
+    const [filteredProducts, setFilteredProducts] = useState([]);
     const [filters, setFilters] = useState({
         name: '',
         brand: '',
@@ -21,19 +14,83 @@ const Productos = () => {
         maxPrice: 2000,
     });
 
-    const brands = [...new Set(products.map(p => p.brand))];
-    const categories = [...new Set(products.map(p => p.category))];
+    const [brands, setBrands] = useState([]);
+    const [categories, setCategories] = useState([]);
+
+    // Fetch the products from the API
+    const fetchProducts = () => {
+        axios.get('http://localhost:8080/api/v1/products/all')
+            .then((response) => {
+                const productData = response.data.data; // Accedemos a los productos de la respuesta
+                setProducts(productData);
+                setFilteredProducts(productData);
+
+                // Extraemos marcas y categorías únicas
+                const uniqueBrands = [...new Set(productData.map(p => p.brand))];
+                const uniqueCategories = [...new Set(productData.map(p => p.category.name))];
+                setBrands(uniqueBrands);
+                setCategories(uniqueCategories);
+            })
+            .catch((error) => {
+                console.error('Error al cargar los productos:', error);
+            });
+    };
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    // Filtrar productos según los criterios seleccionados
+    useEffect(() => {
+        // Si el rango de precio ha cambiado, obtener productos filtrados por ese rango
+        if (filters.minPrice && filters.maxPrice) {
+            axios.get(`http://localhost:8080/api/v1/products/product/by-price-range?minPrice=${filters.minPrice}&maxPrice=${filters.maxPrice}`)
+                .then((response) => {
+                    setProducts(response.data.data); // Actualizamos los productos con los que vienen de la API
+                })
+                .catch((error) => {
+                    console.error('Error al obtener productos por rango de precio:', error);
+                });
+        } else {
+            setProducts([]); // Si no hay rango de precio definido, limpiamos los productos
+        }
+    }, [filters.minPrice, filters.maxPrice]);
+
+    // Filtrar productos por categoría seleccionada
+    useEffect(() => {
+        if (filters.category) {
+            axios.get(`http://localhost:8080/api/v1/products/product/${filters.category}/all/products`)
+                .then((response) => {
+                    setProducts(response.data.data); // Actualizamos los productos según la categoría seleccionada
+                })
+                .catch((error) => {
+                    console.error('Error al obtener productos por categoría:', error);
+                });
+        } else {
+            setProducts([]); // Si no hay categoría seleccionada, limpiamos los productos
+        }
+    }, [filters.category]);
 
     useEffect(() => {
         const newFilteredProducts = products.filter(product =>
             product.name.toLowerCase().includes(filters.name.toLowerCase()) &&
             (filters.brand === '' || product.brand === filters.brand) &&
-            (filters.category === '' || product.category === filters.category) &&
             product.price >= filters.minPrice &&
             product.price <= filters.maxPrice
         );
         setFilteredProducts(newFilteredProducts);
-    }, [filters]);
+    }, [filters, products]);
+
+    const resetFilters = () => {
+        setFilters({
+            name: '',
+            brand: '',
+            category: '',
+            minPrice: 0,
+            maxPrice: 2000,
+        });
+        fetchProducts();
+    };
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -97,6 +154,7 @@ const Productos = () => {
                                     value={filters.minPrice}
                                     onChange={(e) => setFilters({ ...filters, minPrice: Number(e.target.value) })}
                                     className="w-20 border-gray-300 rounded-md shadow-sm"
+                                    placeholder="Min"
                                 />
                                 <span>a</span>
                                 <input
@@ -104,8 +162,19 @@ const Productos = () => {
                                     value={filters.maxPrice}
                                     onChange={(e) => setFilters({ ...filters, maxPrice: Number(e.target.value) })}
                                     className="w-20 border-gray-300 rounded-md shadow-sm"
+                                    placeholder="Max"
                                 />
                             </div>
+                        </div>
+
+                        {/* Botón de Reset */}
+                        <div>
+                            <button
+                                onClick={resetFilters}
+                                className="w-full bg-red-500 text-white py-2 mt-4 rounded hover:bg-red-600 transition-colors"
+                            >
+                                Resetear Filtros
+                            </button>
                         </div>
                     </div>
 
@@ -114,10 +183,10 @@ const Productos = () => {
                             {filteredProducts.map(product => (
                                 <div key={product.id} className="bg-white shadow-lg rounded-lg p-4">
                                     <div className="text-center">
-                                        <img src={product.image} alt={product.name} className="w-full h-48 object-cover mb-4" />
+                                        <img src={product.images.length > 0 ? product.images[0] : '/placeholder.svg?height=200&width=200'} alt={product.name} className="w-full h-48 object-cover mb-4" />
                                         <h2 className="font-semibold text-lg">{product.name}</h2>
                                         <p className="text-sm text-gray-600">{product.brand}</p>
-                                        <p className="text-sm text-gray-600">{product.category}</p>
+                                        <p className="text-sm text-gray-600">{product.category.name}</p>
                                         <p className="text-lg font-bold mt-2">${product.price}</p>
                                         <button
                                             onClick={() => addToCart(product)}
