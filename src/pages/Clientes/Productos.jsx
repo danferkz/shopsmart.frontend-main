@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios'; // Importar axios para hacer la solicitud HTTP
 import { useCart } from '../../context/CartContext'; // Ajusta la ruta según la estructura de tu proyecto
+import { useNavigate } from 'react-router-dom'; // Importamos useNavigate para la redirección
 
 const Productos = () => {
     const { addToCart } = useCart(); // Usamos el hook para obtener la función addToCart
@@ -16,6 +17,7 @@ const Productos = () => {
 
     const [brands, setBrands] = useState([]);
     const [categories, setCategories] = useState([]);
+    const navigate = useNavigate(); // Hook para la navegación
 
     // Fetch the products from the API
     const fetchProducts = () => {
@@ -90,6 +92,11 @@ const Productos = () => {
             maxPrice: 2000,
         });
         fetchProducts();
+    };
+
+    // Función para redirigir al carrito
+    const redirectToCart = () => {
+        navigate('/clientes/carrito'); // Redirige a la ruta /clientes/carrito
     };
 
     return (
@@ -199,6 +206,16 @@ const Productos = () => {
                             ))}
                         </div>
                     </div>
+                </div>
+
+                {/* Botón para redirigir al carrito */}
+                <div className="mt-6 text-center">
+                    <button
+                        onClick={redirectToCart}
+                        className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition-colors"
+                    >
+                        Ir al carrito
+                    </button>
                 </div>
             </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -7,7 +8,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!email || !password) {
@@ -15,11 +16,28 @@ const Login = () => {
             return;
         }
 
-        if (email === 'admin@erp.com' && password === 'admin123') {
-            console.log('Inicio de sesión exitoso');
-            navigate('/products'); // Redirige a la página de productos
-        } else {
-            setError('Correo o contraseña incorrectos.');
+        try {
+            const response = await axios.post('http://localhost:8080/api/v1/users/login', {
+                email,
+                password,
+            });
+
+            const { data } = response.data;
+
+            // Guardar ID del usuario en el localStorage
+            localStorage.setItem('userId', data.id);
+
+            // Redirigir según el rol
+            if (data.roles.includes('USER')) {
+                navigate('/clientes/cuenta');
+            } else {
+                setError('No tiene permisos para acceder.');
+            }
+        } catch (err) {
+            // Manejo de errores de la API
+            setError(
+                err.response?.data?.message || 'Error al iniciar sesión. Inténtalo nuevamente.'
+            );
         }
     };
 

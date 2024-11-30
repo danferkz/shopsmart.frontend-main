@@ -3,6 +3,7 @@ import { useCart } from '../../context/CartContext'; // Ajusta la ruta
 import { Button } from "@mui/material";
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import PaymentButton from '../../components/PaymentButton'; // Ajusta la ruta
+import { useNavigate } from 'react-router-dom'; // Importamos useNavigate
 
 const Carrito = () => {
   const { 
@@ -13,8 +14,15 @@ const Carrito = () => {
     clearCart 
   } = useCart();
 
+  const navigate = useNavigate(); // Hook para la navegación
+
   // Aquí puedes generar un número de compra de manera sencilla (por ejemplo, un timestamp)
   const purchaseNumber = Date.now();
+
+  // Función para redirigir al inicio
+  const redirectToHome = () => {
+    navigate('/'); // Redirige a la página principal
+  };
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">
@@ -74,6 +82,17 @@ const Carrito = () => {
           </div>
         </>
       )}
+
+      {/* Botón para redirigir a la página principal */}
+      <div className="mt-6 text-center">
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={redirectToHome} // Redirige al inicio
+        >
+          Volver a la tienda
+        </Button>
+      </div>
     </div>
   );
 };
