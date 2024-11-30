@@ -1,4 +1,4 @@
-import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
+import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
@@ -15,15 +15,35 @@ const Header = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const toggleSidebar = (isOpen) => {
     setIsSidebarOpen(isOpen);
   };
 
+  const toggleDrawer = (isOpen) => {
+    setIsDrawerOpen(isOpen);
+  };
+
+  const menuItems = [
+    { text: "Productos", path: "/productos" },
+    { text: "Carrito", path: "/clientes/carrito" },
+    { text: "Cuenta", path: "/clientes/cuenta" },
+    { text: "Administración", path: "/admin" },
+    { text: "Proveedores", path: "/proveedores/ordenes" },
+  ];
+
   return (
     <AppBar position="static" sx={{ backgroundColor: "#000" }}>
       <Toolbar>
         {/* Botón de menú a la izquierda */}
+        <IconButton
+          edge="start"
+          sx={{ color: "#8eff1c" }}
+          onClick={() => toggleDrawer(true)}
+        >
+          <MenuIcon />
+        </IconButton>
 
         {/* Logo o nombre de la app */}
         <Typography
@@ -90,6 +110,28 @@ const Header = () => {
           open={isSidebarOpen} // Estado del sidebar
           onClose={() => toggleSidebar(false)} // Cierra el sidebar
         />
+
+        {/* Sidebar del menu */}
+        <Drawer
+          anchor="left"
+          open={isDrawerOpen}
+          onClose={() => toggleDrawer(false)} // Cierra el Drawer al hacer clic fuera
+        >
+          <List sx={{ width: 250 }}>
+            {menuItems.map((item, index) => (
+              <ListItem
+                button
+                key={index}
+                onClick={() => {
+                  navigate(item.path); // Navegar al hacer clic en el item
+                  toggleDrawer(false); // Cerrar el Drawer después de la navegación
+                }}
+              >
+                <ListItemText primary={item.text} />
+              </ListItem>
+            ))}
+          </List>
+        </Drawer>
       </Toolbar>
     </AppBar>
   );
