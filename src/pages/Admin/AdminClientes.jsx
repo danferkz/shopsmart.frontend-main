@@ -6,14 +6,14 @@ const AdminClientes = () => {
     const [selectedCustomer, setSelectedCustomer] = useState(null);
 
     useEffect(() => {
-        // Hacer la solicitud para obtener los usuarios
+        // Solicitar todos los usuarios al backend
         axios
             .get('http://localhost:8080/api/v1/users/get-all')
             .then((response) => {
-                const users = response.data.data;
+                const users = response.data.data; // Asume que la respuesta contiene la lista en `data`
                 // Filtrar solo los usuarios con rol 'USER'
                 const filteredUsers = users.filter(user =>
-                    user.role.some(role => role.name === 'USER')
+                    user.roles.includes('USER') // `roles` es una lista de strings en el DTO
                 );
                 setCustomers(filteredUsers);
             })
@@ -27,7 +27,7 @@ const AdminClientes = () => {
             <div className="bg-white shadow-lg rounded-lg w-full max-w-4xl p-6">
                 <div className="text-center mb-6">
                     <h1 className="text-2xl font-bold">Clientes</h1>
-                    <p className="text-gray-600">Aquí se listan los clientes</p>
+                    <p className="text-gray-600">Aquí se listan los clientes registrados</p>
                 </div>
 
                 {/* Tabla de clientes */}
@@ -36,7 +36,7 @@ const AdminClientes = () => {
                         <tr>
                             <th className="border px-4 py-2">Nombre</th>
                             <th className="border px-4 py-2">Email</th>
-                            <th className="border px-4 py-2">Teléfono</th>
+                            <th className="border px-4 py-2">Roles</th>
                             <th className="border px-4 py-2">Acciones</th>
                         </tr>
                     </thead>
@@ -45,7 +45,7 @@ const AdminClientes = () => {
                             <tr key={customer.id}>
                                 <td className="border px-4 py-2">{`${customer.firstName} ${customer.lastName}`}</td>
                                 <td className="border px-4 py-2">{customer.email}</td>
-                                <td className="border px-4 py-2">No disponible</td> {/* Asumiendo que no hay un campo teléfono */}
+                                <td className="border px-4 py-2">{customer.roles.join(', ')}</td>
                                 <td className="border px-4 py-2">
                                     <button
                                         className="text-blue-600"
@@ -66,6 +66,7 @@ const AdminClientes = () => {
                             <h3 className="text-xl font-semibold mb-4">Detalles del Cliente</h3>
                             <p><strong>Nombre:</strong> {`${selectedCustomer.firstName} ${selectedCustomer.lastName}`}</p>
                             <p><strong>Email:</strong> {selectedCustomer.email}</p>
+                            <p><strong>Roles:</strong> {selectedCustomer.roles.join(', ')}</p>
                             <div className="mt-4 text-right">
                                 <button
                                     className="bg-blue-600 text-white px-4 py-2 rounded"

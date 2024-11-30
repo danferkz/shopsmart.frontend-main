@@ -1,50 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AdminProducts = () => {
-    // Datos de ejemplo
-    const initialProducts = [
-        { id: '1', name: 'Laptop', description: 'Potente laptop para trabajo', price: 999.99, stock: 50 },
-        { id: '2', name: 'Smartphone', description: 'Último modelo con cámara avanzada', price: 699.99, stock: 100 },
-        { id: '3', name: 'Auriculares', description: 'Auriculares inalámbricos con cancelación de ruido', price: 199.99, stock: 200 },
-        { id: '4', name: 'Monitor', description: 'Monitor 4K de 27 pulgadas', price: 349.99, stock: 30 },
-        { id: '5', name: 'Teclado', description: 'Teclado mecánico para gaming', price: 129.99, stock: 75 },
-    ];
-
-    const [products, setProducts] = useState(initialProducts);
+    const [products, setProducts] = useState([]);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [currentProduct, setCurrentProduct] = useState(null);
+    const API_BASE_URL = "http://localhost:8080/api/v1/products"; // Backend URL
 
-    const handleAddProduct = (event) => {
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const fetchProducts = async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/all`);
+            setProducts(response.data.data); // Asume que `data` contiene los productos
+        } catch (error) {
+            console.error("Error al obtener productos:", error);
+        }
+    };
+
+    const handleAddProduct = async (event) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const newProduct = {
-            id: Date.now().toString(),
             name: formData.get('name'),
-            description: formData.get('description'),
+            brand: formData.get('brand'),
             price: parseFloat(formData.get('price')),
-            stock: parseInt(formData.get('stock'), 10),
+            inventory: parseInt(formData.get('inventory'), 10),
+            description: formData.get('description'),
+            category: {
+                name: formData.get('categoryName')
+            },
+            images: [] // Inicialmente vacío
         };
-        setProducts([...products, newProduct]);
-        setIsAddDialogOpen(false);
+
+        try {
+            await axios.post(`${API_BASE_URL}/add`, newProduct, {
+                headers: { 'Content-Type': 'application/json' },
+            });
+            fetchProducts();
+            setIsAddDialogOpen(false);
+        } catch (error) {
+            console.error("Error al añadir producto:", error.response?.data || error.message);
+        }
     };
 
-    const handleEditProduct = (event) => {
+    const handleEditProduct = async (event) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const updatedProduct = {
-            id: currentProduct.id,
             name: formData.get('name'),
-            description: formData.get('description'),
+            brand: formData.get('brand'),
             price: parseFloat(formData.get('price')),
-            stock: parseInt(formData.get('stock'), 10),
+            inventory: parseInt(formData.get('inventory'), 10),
+            description: formData.get('description'),
+            category: {
+                name: formData.get('categoryName')
+            },
+            images: []
         };
-        setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
-        setIsEditDialogOpen(false);
+
+        try {
+            await axios.put(`${API_BASE_URL}/product/${currentProduct.id}/update`, updatedProduct, {
+                headers: { 'Content-Type': 'application/json' },
+            });
+            fetchProducts();
+            setIsEditDialogOpen(false);
+        } catch (error) {
+            console.error("Error al editar producto:", error.response?.data || error.message);
+        }
     };
 
-    const handleDeleteProduct = (id) => {
-        setProducts(products.filter(p => p.id !== id));
+    const handleDeleteProduct = async (id) => {
+        try {
+            await axios.delete(`${API_BASE_URL}/product/${id}/delete`);
+            fetchProducts();
+        } catch (error) {
+            console.error("Error al eliminar producto:", error.response?.data || error.message);
+        }
     };
 
     return (
@@ -55,7 +90,6 @@ const AdminProducts = () => {
                     <p className="text-gray-600">Administra tus productos fácilmente</p>
                 </div>
 
-                {/* Botón para abrir el modal de añadir producto */}
                 <div className="flex justify-between mb-6">
                     <button
                         onClick={() => setIsAddDialogOpen(true)}
@@ -65,15 +99,15 @@ const AdminProducts = () => {
                     </button>
                 </div>
 
-                {/* Tabla de productos */}
                 <div className="overflow-x-auto">
                     <table className="table-auto w-full border-collapse border border-gray-200">
                         <thead>
                             <tr className="bg-gray-100">
                                 <th className="border border-gray-200 px-4 py-2 text-left">Nombre</th>
                                 <th className="border border-gray-200 px-4 py-2 text-left">Descripción</th>
+                                <th className="border border-gray-200 px-4 py-2 text-left">Marca</th>
                                 <th className="border border-gray-200 px-4 py-2 text-left">Precio</th>
-                                <th className="border border-gray-200 px-4 py-2 text-left">Stock</th>
+                                <th className="border border-gray-200 px-4 py-2 text-left">Inventario</th>
                                 <th className="border border-gray-200 px-4 py-2 text-left">Acciones</th>
                             </tr>
                         </thead>
@@ -82,11 +116,11 @@ const AdminProducts = () => {
                                 <tr key={product.id} className="hover:bg-gray-50">
                                     <td className="border border-gray-200 px-4 py-2">{product.name}</td>
                                     <td className="border border-gray-200 px-4 py-2">{product.description}</td>
+                                    <td className="border border-gray-200 px-4 py-2">{product.brand}</td>
                                     <td className="border border-gray-200 px-4 py-2">${product.price.toFixed(2)}</td>
-                                    <td className="border border-gray-200 px-4 py-2">{product.stock}</td>
+                                    <td className="border border-gray-200 px-4 py-2">{product.inventory}</td>
                                     <td className="border border-gray-200 px-4 py-2">
                                         <div className="flex space-x-2">
-                                            {/* Editar Producto */}
                                             <button
                                                 onClick={() => {
                                                     setCurrentProduct(product);
@@ -96,8 +130,6 @@ const AdminProducts = () => {
                                             >
                                                 Editar
                                             </button>
-
-                                            {/* Eliminar Producto */}
                                             <button
                                                 onClick={() => handleDeleteProduct(product.id)}
                                                 className="bg-red-500 text-white px-3 py-1 rounded"
@@ -112,121 +144,117 @@ const AdminProducts = () => {
                     </table>
                 </div>
 
-                {/* Modal de añadir producto */}
                 {isAddDialogOpen && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                        <div className="bg-white rounded-lg w-96 p-6">
-                            <h3 className="text-xl font-bold mb-4">Añadir Nuevo Producto</h3>
-                            <form onSubmit={handleAddProduct}>
-                                <div className="mb-4">
-                                    <label htmlFor="name" className="block text-gray-700">Nombre</label>
-                                    <input type="text" id="name" name="name" required className="w-full p-2 border rounded" />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="description" className="block text-gray-700">Descripción</label>
-                                    <input type="text" id="description" name="description" required className="w-full p-2 border rounded" />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="price" className="block text-gray-700">Precio</label>
-                                    <input type="number" id="price" name="price" step="0.01" required className="w-full p-2 border rounded" />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="stock" className="block text-gray-700">Stock</label>
-                                    <input type="number" id="stock" name="stock" required className="w-full p-2 border rounded" />
-                                </div>
-                                <div className="flex justify-end space-x-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsAddDialogOpen(false)}
-                                        className="bg-gray-300 px-4 py-2 rounded"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="bg-blue-500 text-white px-4 py-2 rounded"
-                                    >
-                                        Añadir Producto
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                    <ProductModal
+                        title="Añadir Nuevo Producto"
+                        onClose={() => setIsAddDialogOpen(false)}
+                        onSubmit={handleAddProduct}
+                    />
                 )}
 
-                {/* Modal de editar producto */}
                 {isEditDialogOpen && currentProduct && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                        <div className="bg-white rounded-lg w-96 p-6">
-                            <h3 className="text-xl font-bold mb-4">Editar Producto</h3>
-                            <form onSubmit={handleEditProduct}>
-                                <div className="mb-4">
-                                    <label htmlFor="edit-name" className="block text-gray-700">Nombre</label>
-                                    <input
-                                        type="text"
-                                        id="edit-name"
-                                        name="name"
-                                        defaultValue={currentProduct.name}
-                                        required
-                                        className="w-full p-2 border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="edit-description" className="block text-gray-700">Descripción</label>
-                                    <input
-                                        type="text"
-                                        id="edit-description"
-                                        name="description"
-                                        defaultValue={currentProduct.description}
-                                        required
-                                        className="w-full p-2 border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="edit-price" className="block text-gray-700">Precio</label>
-                                    <input
-                                        type="number"
-                                        id="edit-price"
-                                        name="price"
-                                        step="0.01"
-                                        defaultValue={currentProduct.price}
-                                        required
-                                        className="w-full p-2 border rounded"
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="edit-stock" className="block text-gray-700">Stock</label>
-                                    <input
-                                        type="number"
-                                        id="edit-stock"
-                                        name="stock"
-                                        defaultValue={currentProduct.stock}
-                                        required
-                                        className="w-full p-2 border rounded"
-                                    />
-                                </div>
-                                <div className="flex justify-end space-x-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsEditDialogOpen(false)}
-                                        className="bg-gray-300 px-4 py-2 rounded"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="bg-yellow-500 text-white px-4 py-2 rounded"
-                                    >
-                                        Guardar Cambios
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                    <ProductModal
+                        title="Editar Producto"
+                        onClose={() => setIsEditDialogOpen(false)}
+                        onSubmit={handleEditProduct}
+                        product={currentProduct}
+                    />
                 )}
             </div>
         </div>
     );
 };
+
+const ProductModal = ({ title, onClose, onSubmit, product }) => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg w-96 p-6">
+            <h3 className="text-xl font-bold mb-4">{title}</h3>
+            <form onSubmit={onSubmit}>
+                <div className="mb-4">
+                    <label htmlFor="name" className="block text-gray-700">Nombre</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        defaultValue={product?.name || ''}
+                        required
+                        className="w-full p-2 border rounded"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="description" className="block text-gray-700">Descripción</label>
+                    <input
+                        type="text"
+                        id="description"
+                        name="description"
+                        defaultValue={product?.description || ''}
+                        required
+                        className="w-full p-2 border rounded"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="brand" className="block text-gray-700">Marca</label>
+                    <input
+                        type="text"
+                        id="brand"
+                        name="brand"
+                        defaultValue={product?.brand || ''}
+                        required
+                        className="w-full p-2 border rounded"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="categoryName" className="block text-gray-700">Categoría</label>
+                    <input
+                        type="text"
+                        id="categoryName"
+                        name="categoryName"
+                        defaultValue={product?.category?.name || ''}
+                        required
+                        className="w-full p-2 border rounded"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="price" className="block text-gray-700">Precio</label>
+                    <input
+                        type="number"
+                        id="price"
+                        name="price"
+                        step="0.01"
+                        defaultValue={product?.price || ''}
+                        required
+                        className="w-full p-2 border rounded"
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="inventory" className="block text-gray-700">Inventario</label>
+                    <input
+                        type="number"
+                        id="inventory"
+                        name="inventory"
+                        defaultValue={product?.inventory || ''}
+                        required
+                        className="w-full p-2 border rounded"
+                    />
+                </div>
+                <div className="flex justify-end space-x-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="bg-gray-300 px-4 py-2 rounded"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        className="bg-blue-500 text-white px-4 py-2 rounded"
+                    >
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+);
 
 export default AdminProducts;
