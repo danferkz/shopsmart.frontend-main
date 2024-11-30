@@ -1,5 +1,6 @@
 import React from 'react';
 import { Package, Users, ShoppingCart, Truck, BarChart } from 'lucide-react';
+import { Link } from "react-router-dom";
 
 const Administracion = () => {
     return (
@@ -15,7 +16,14 @@ const Administracion = () => {
                         <h2 className="text-xl font-semibold">Gestión de Productos</h2>
                     </div>
                     <p className="text-gray-600 mb-4">Administra tu catálogo de productos</p>
-                    <p className="text-sm text-gray-500">Haz clic para más detalles</p>
+                    <p className="text-sm text-gray-500">
+                        <Link
+                            to="/admin/products"
+                            style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                        >
+                            Haz clic para más detalles
+                        </Link>
+                    </p>
                 </div>
 
                 {/* Card 2: Gestión de Clientes */}
@@ -25,7 +33,14 @@ const Administracion = () => {
                         <h2 className="text-xl font-semibold">Gestión de Clientes</h2>
                     </div>
                     <p className="text-gray-600 mb-4">Administra la información de tus clientes</p>
-                    <p className="text-sm text-gray-500">Haz clic para más detalles</p>
+                    <p className="text-sm text-gray-500">
+                        <Link
+                            to="/admin/clientes"
+                            style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                        >
+                            Haz clic para más detalles
+                        </Link>
+                    </p>
                 </div>
 
                 {/* Card 3: Gestión de Órdenes */}
@@ -35,7 +50,14 @@ const Administracion = () => {
                         <h2 className="text-xl font-semibold">Gestión de Órdenes</h2>
                     </div>
                     <p className="text-gray-600 mb-4">Supervisa y gestiona los pedidos</p>
-                    <p className="text-sm text-gray-500">Haz clic para más detalles</p>
+                    <p className="text-sm text-gray-500">
+                        <Link
+                            to="/admin/ordenes"
+                            style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                        >
+                            Haz clic para más detalles
+                        </Link>
+                    </p>
                 </div>
 
                 {/* Card 4: Gestión de Proveedores */}
@@ -45,7 +67,14 @@ const Administracion = () => {
                         <h2 className="text-xl font-semibold">Gestión de Proveedores</h2>
                     </div>
                     <p className="text-gray-600 mb-4">Administra tus relaciones con proveedores</p>
-                    <p className="text-sm text-gray-500">Haz clic para más detalles</p>
+                    <p className="text-sm text-gray-500">
+                        <Link
+                            to="/admin/proveedores"
+                            style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                        >
+                            Haz clic para más detalles
+                        </Link>
+                    </p>
                 </div>
 
                 {/* Card 5: Estadísticas */}
@@ -55,7 +84,14 @@ const Administracion = () => {
                         <h2 className="text-xl font-semibold">Estadísticas</h2>
                     </div>
                     <p className="text-gray-600 mb-4">Visualiza el rendimiento de tu negocio</p>
-                    <p className="text-sm text-gray-500">Haz clic para más detalles</p>
+                    <p className="text-sm text-gray-500">
+                        <Link
+                            to="/admin/estadisticas"
+                            style={{ textDecoration: "none", color: "inherit", cursor: "pointer" }}
+                        >
+                            Haz clic para más detalles
+                        </Link>
+                    </p>
                 </div>
 
             </div>
