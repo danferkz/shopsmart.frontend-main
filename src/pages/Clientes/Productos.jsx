@@ -73,7 +73,7 @@ const Productos = () => {
 
     useEffect(() => {
         const newFilteredProducts = products.filter(product =>
-            product.name.toLowerCase().includes(filters.name.toLowerCase()) &&
+            (product.name || "").toLowerCase().includes((filters.name || "").toLowerCase()) &&
             (filters.brand === '' || product.brand === filters.brand) &&
             product.price >= filters.minPrice &&
             product.price <= filters.maxPrice
