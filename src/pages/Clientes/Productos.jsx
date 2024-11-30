@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useCart } from '../../context/CartContext'; // Ajusta la ruta según la estructura de tu proyecto
 
 // Simulated product data
 const products = [
@@ -10,6 +11,7 @@ const products = [
 ];
 
 const Productos = () => {
+    const { addToCart } = useCart(); // Usamos el hook para obtener la función addToCart
     const [filteredProducts, setFilteredProducts] = useState(products);
     const [filters, setFilters] = useState({
         name: '',
@@ -117,7 +119,10 @@ const Productos = () => {
                                         <p className="text-sm text-gray-600">{product.brand}</p>
                                         <p className="text-sm text-gray-600">{product.category}</p>
                                         <p className="text-lg font-bold mt-2">${product.price}</p>
-                                        <button className="w-full bg-blue-500 text-white py-2 mt-4 rounded hover:bg-blue-600 transition-colors">
+                                        <button
+                                            onClick={() => addToCart(product)}
+                                            className="w-full bg-blue-500 text-white py-2 mt-4 rounded hover:bg-blue-600 transition-colors"
+                                        >
                                             Agregar al carrito
                                         </button>
                                     </div>

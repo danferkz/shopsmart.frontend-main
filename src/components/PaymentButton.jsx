@@ -139,7 +139,7 @@ const PaymentButton = ({ amount, purchaseNumber }) => {
 
   return (
     <div style={{ textAlign: "center" }}>
-      {/* Botón para iniciar el proceso */}
+      {/* Botón para iniciar el proceso XD */}
       <button
         onClick={getSessionToken}
         disabled={isLoading}

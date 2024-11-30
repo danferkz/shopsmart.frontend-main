@@ -1,51 +1,83 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// IMPORTACION DE SERVICIOS
-import { getCart, addItemToCart } from "../services/cartService";
-
-// Crear el contexto
+// Crear el contexto del carrito
 const CartContext = createContext();
 
-// Proveedor del carrito
+// Hook personalizado para usar el contexto del carrito
+export const useCart = () => useContext(CartContext);
+
+// Proveedor del contexto del carrito
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState(null); // Estado del carrito
-  const cartId = 1;
+  const [cartItems, setCartItems] = useState(() => {
+    // Recuperar carrito de localStorage al inicializar
+    const savedCart = localStorage.getItem('cartItems');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
 
+  // Guardar cambios del carrito en localStorage
   useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const data = await getCart(cartId); // Llama al servicio con el cartId
-        setCart(data.data); // Asegúrate de asignar `data.data`
-      } catch (error) {
-        console.error("Error al cargar el carrito:", error);
-      }
-    };
-    fetchCart();
-  }, []);
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
 
-  // Función para añadir un producto al carrito
-  const addItem = async (productId, quantity) => {
-    try {
-      await addItemToCart(cartId, productId, quantity);
-      const updatedCart = await getCart(cartId);
-      setCart(updatedCart.data); // Actualiza el estado del carrito
-    } catch (error) {
-      console.error("Error al agregar producto al carrito:", error);
-    }
+  // Función para agregar producto al carrito
+  const addToCart = (product) => {
+    setCartItems(currentItems => {
+      // Buscar si el producto ya existe en el carrito
+      const existingItemIndex = currentItems.findIndex(item => item.id === product.id);
+      
+      if (existingItemIndex > -1) {
+        // Si existe, incrementar cantidad
+        const newItems = [...currentItems];
+        newItems[existingItemIndex] = {
+          ...newItems[existingItemIndex], 
+          quantity: newItems[existingItemIndex].quantity + 1
+        };
+        return newItems;
+      } else {
+        // Si no existe, agregar nuevo producto con cantidad 1
+        return [...currentItems, { ...product, quantity: 1 }];
+      }
+    });
   };
 
+  // Función para actualizar cantidad de un producto
+  const updateQuantity = (id, change) => {
+    setCartItems(currentItems => 
+      currentItems
+        .map(item => 
+          item.id === id 
+            ? { ...item, quantity: Math.max(1, item.quantity + change) }
+            : item
+        )
+        .filter(item => item.quantity > 0)
+    );
+  };
+
+  // Función para eliminar un producto del carrito
+  const removeItem = (id) => {
+    setCartItems(currentItems => 
+      currentItems.filter(item => item.id !== id)
+    );
+  };
+
+  // Función para limpiar el carrito
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
+  // Calcular total del carrito
+  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
   return (
-    <CartContext.Provider value={{ cart, addItem }}>
+    <CartContext.Provider value={{ 
+      cartItems, 
+      addToCart, 
+      updateQuantity, 
+      removeItem, 
+      clearCart,
+      total 
+    }}>
       {children}
     </CartContext.Provider>
   );
-};
-
-// Hook para usar el contexto del carrito
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart debe usarse dentro de un CartProvider");
-  }
-  return context;
 };

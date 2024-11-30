@@ -1,6 +1,7 @@
 // src/App.jsx
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import { CartProvider } from "./context/CartContext"; // Ajusta la ruta según tu estructura
 
 // Páginas Clientes
 import Register from "./pages/Clientes/Register";
@@ -25,33 +26,38 @@ import Unauthorized from "./pages/Unauthorized";
 
 const App = () => {
   return (
-    <div>
-      <Routes>
-        {/* Rutas de Clientes */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/productos" element={<Productos />} />
-        <Route path="/clientes/cuenta" element={<CuentaUsuario />} />
-        <Route path="/clientes/carrito" element={<Carrito />} />
+    <CartProvider> {/* Esto envuelve todas las rutas dentro del CartProvider */}
+      <div>
+        <Routes>
+          {/* Rutas de Clientes */}
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/productos" element={<Productos />} />
+          <Route path="/clientes/cuenta" element={<CuentaUsuario />} />
+          <Route path="/clientes/carrito" element={<Carrito />} />
 
-        {/* Rutas de Admin */}
-        <Route path="/admin" element={<Administracion />} />
-        <Route path="/admin/products" element={<AdminProducts />} />
-        <Route path="/admin/proveedores" element={<AdminProveedores />} />
-        <Route path="/admin/ordenes" element={<AdminOrdenes />} />
-        <Route path="/admin/clientes" element={<AdminClientes />} />
-        <Route path="/admin/admins" element={<AdminAdmins />} />
+          {/* Rutas de Admin */}
+          <Route path="/admin" element={<Administracion />} />
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/proveedores" element={<AdminProveedores />} />
+          <Route path="/admin/ordenes" element={<AdminOrdenes />} />
+          <Route path="/admin/clientes" element={<AdminClientes />} />
+          <Route path="/admin/admins" element={<AdminAdmins />} />
 
-        {/* Rutas de Proveedores */}
-        <Route path="/proveedores/ordenes" element={<ProveedorOrdenes />} />
+          {/* Rutas de Proveedores */}
+          <Route path="/proveedores/ordenes" element={<ProveedorOrdenes />} />
 
-        {/* Página de Unauthorized */}
-        <Route path="/unauthorized" element={<Unauthorized />} />
-        
-        {/* Página por defecto en caso de ruta no encontrada */}
-        <Route path="*" element={<Unauthorized />} />
-      </Routes>
-    </div>
+          {/* Página de Unauthorized */}
+          <Route path="/unauthorized" element={<Unauthorized />} />
+          
+          {/* Página por defecto en caso de ruta no encontrada */}
+          <Route path="*" element={<Unauthorized />} />
+
+          {/* Página por defecto para la ruta / */}
+          <Route path="/" element={<Productos />} />
+        </Routes>
+      </div>
+    </CartProvider>
   );
 };
 
